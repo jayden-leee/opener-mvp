@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  opener:
+    build: .
+    image: opener:latest
+    container_name: opener_app
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - MPLCONFIGDIR=/tmp/matplotlib
+    volumes:
+      # 로컬 개발 시 코드 마운트 (프로덕션에서는 제거)
+      - .:/app
+      - /app/__pycache__
+      - /app/engine/__pycache__
+      - /app/pages/__pycache__
+      - /app/utils/__pycache__
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # 로컬 Supabase가 없을 때 테스트용 (선택)
+  # supabase-local:
+  #   image: supabase/postgres:15
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_PASSWORD: your_password
